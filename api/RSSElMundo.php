@@ -4,6 +4,10 @@ require_once "conexionRSS.php";
 
 $sXML=download("https://e00-elmundo.uecdn.es/elmundo/rss/espana.xml");
 
+if (empty($sXML)) {
+    throw new Exception ("No se pudo obtener el contenido del RSS");
+}
+
 $oXML=new SimpleXMLElement($sXML);
 
 require_once "conexionBBDD.php";

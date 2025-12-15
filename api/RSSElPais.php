@@ -4,6 +4,10 @@ require_once "conexionRSS.php";
 
 $sXML=download("http://ep00.epimg.net/rss/elpais/portada.xml");
 
+if (empty($sXML)) {
+    throw new Exception ("No se pudo obtener el contenido del RSS");
+}
+
 $oXML=new SimpleXMLElement($sXML);
 
 require_once "conexionBBDD.php";
