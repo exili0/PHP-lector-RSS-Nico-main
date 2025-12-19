@@ -9,8 +9,9 @@ if (!$dbUrl) {
 
 $url = parse_url($dbUrl);
 
+$url = parse_url($dbUrl);
 $host = $url['host'];
-$db   = ltrim($url['path'], '/');
+$db = ltrim($url['path'], '/');
 $user = $url['user'];
 $pass = $url['pass'];
 $port = $url['port'] ?: 5432;
@@ -20,7 +21,9 @@ $dsn = "pgsql:host=$host;port=$port;dbname=$db;sslmode=require";
 try {
     $pdo = new PDO($dsn, $user, $pass, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
     // Guardamos en una variable llamada $link para que sea similar a tu código previo
-    $link = $pdo; 
+    $link = $pdo;
+    $pdo->exec("SET NAMES 'UTF8'");
+    
 } catch (PDOException $e) {
     die("Error de conexión: " . $e->getMessage());
 }
