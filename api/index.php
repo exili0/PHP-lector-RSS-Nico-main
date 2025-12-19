@@ -66,7 +66,7 @@
         die("Error de conexión PostgreSQL");
     }
 
-    echo "<table style='border: 5px #E4CCE8 solid;'>";
+    echo "<table style='border: 5px #ca75d9ff solid;'>";
     echo "<tr><th>TITULO</th><th>DESCRIPCIÓN</th><th>CATEGORÍA</th><th>ENLACE</th><th>FECHA</th></tr>";
 
     if (isset($_REQUEST['filtrar'])) {
@@ -94,6 +94,7 @@
         filtros($sql, $link);
     }
     echo "</table>";
+    
     ?>
 </body>
 </html>
