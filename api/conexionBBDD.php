@@ -1,7 +1,7 @@
 <?php
 //CAMBIO PARA MIGRAR A POSTGRE
 // Vercel inyecta POSTGRES_URL. Parseamos la URL para extraer los datos.
-$dbUrl = getenv('postgresql://neondb_owner:npg_trDHf4suA9al@ep-fragrant-sunset-agkuerbl-pooler.c-2.eu-central-1.aws.neon.tech/neondb?sslmode=require');
+$dbUrl = getenv('DATABASE_URL');
 
 if (!$dbUrl) {
     die("No se encontró la configuración de la base de datos.");
