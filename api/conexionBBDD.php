@@ -1,24 +1,26 @@
 <?php
+//CAMBIO PARA MIGRAR A POSTGRE
+// Vercel inyecta POSTGRES_URL. Parseamos la URL para extraer los datos.
+$dbUrl = getenv('postgresql://neondb_owner:npg_trDHf4suA9al@ep-fragrant-sunset-agkuerbl-pooler.c-2.eu-central-1.aws.neon.tech/neondb?sslmode=require');
 
-$Repit = false;
-
-// Leer las variables de entorno de Vercel
-$host = getenv('DB_HOST');
-$port = getenv('DB_PORT') ?: '3306';
-$user = getenv('DB_USER');
-$password = getenv('DB_PASS');
-$database = getenv('DB_NAME');
-
-if (!$host || !$user || !$database) {
-    die("Faltan variables de entorno de la base de datos");
+if (!$dbUrl) {
+    die("No se encontró la configuración de la base de datos.");
 }
 
-// Conexión MySQL remota
-$link = mysqli_connect($host, $user, $password, $database, (int)$port);
+$url = parse_url($dbUrl);
 
-if (!$link) {
-    die("Error de conexión: " . mysqli_connect_error());
+$host = $url['host'];
+$db   = ltrim($url['path'], '/');
+$user = $url['user'];
+$pass = $url['pass'];
+$port = $url['port'] ?: 5432;
+
+$dsn = "pgsql:host=$host;port=$port;dbname=$db;sslmode=require";
+
+try {
+    $pdo = new PDO($dsn, $user, $pass, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+    // Guardamos en una variable llamada $link para que sea similar a tu código previo
+    $link = $pdo; 
+} catch (PDOException $e) {
+    die("Error de conexión: " . $e->getMessage());
 }
-
-// Charset
-$link->query("SET NAMES 'utf8'");

@@ -13,7 +13,7 @@ $oXML = new SimpleXMLElement($sXML);
 require_once "conexionBBDD.php";
 
 
-if (mysqli_connect_error()) {
+if (pg_last_error()) {
     printf("Conexión a el periódico El Mundo ha fallado");
 } else {
 
@@ -47,9 +47,9 @@ if (mysqli_connect_error()) {
         $description = $media->description;
 
         $sql = "SELECT link FROM elmundo";
-        $result = mysqli_query($link, $sql);
+        $result = pg_query($link, $sql);
 
-        while ($sqlCompara = mysqli_fetch_array($result)) {
+        while ($sqlCompara = pg_fetch_assoc($result)) {
 
 
             if ($sqlCompara['link'] == $item->link) {
@@ -65,7 +65,7 @@ if (mysqli_connect_error()) {
         if ($Repit == false && $categoriaFiltro <> "") {
 
             $sql = "INSERT INTO elmundo VALUES('','$item->title','$item->link','$description','$categoriaFiltro','$new_fPubli','$item->guid')";
-            $result = mysqli_query($link, $sql);
+            $result = pg_query($link, $sql);
         }
         $categoriaFiltro = "";
     }

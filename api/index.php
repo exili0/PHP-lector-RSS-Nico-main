@@ -63,21 +63,20 @@ and open the template in the editor.
 
     function filtros($sql, $link)
     {
-        $filtrar = mysqli_query($link, $sql);
-
+        $filtrar = pg_query($link, $sql);
         // Verificación de error de consulta
+
         if (!$filtrar) {
-            echo "<tr><td colspan='6'>Error en la consulta SQL: " . mysqli_error($link) . "</td></tr>";
+            echo "<tr><td colspan='6'>Error: " . pg_last_error($link) . "</td></tr>";
             return;
         }
-
         // Si no hay resultados
-        if (mysqli_num_rows($filtrar) == 0) {
-            echo "<tr><td colspan='6'>No se encontraron noticias con los filtros seleccionados.</td></tr>";
+        if (pg_num_rows($filtrar) == 0) {
+            echo "<tr><td colspan='6'>No se encontraron noticias.</td></tr>";
             return;
         }
 
-        while ($arrayFiltro = mysqli_fetch_array($filtrar)) {
+        while ($arrayFiltro = pg_fetch_assoc($filtrar)) {
 
             echo "<tr>";
             echo "<th style='border: 1px #E4CCE8 solid;'>" . $arrayFiltro['titulo'] . "</th>";
@@ -167,7 +166,6 @@ and open the template in the editor.
                 $sql = "SELECT * FROM " . $periodicosMin . " ORDER BY fPubli desc";
                 filtros($sql, $link);
             }
-
         } else {
 
             $sql = "SELECT * FROM elpais ORDER BY fPubli desc"; // Cuadno no se aplica ningún filtro, mostrar todo ordenado por fecha descendente
