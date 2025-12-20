@@ -22,7 +22,7 @@
 </head>
 
 <body>
-    <form action="index.php" method="GET">
+    <form action="index.php" method="POST">
         <fieldset>
             <legend>FILTRO</legend>
             <label>PERIODICO: </label>
@@ -78,11 +78,18 @@
     echo "<table style='border: 5px #ca75d9ff solid;'>";
     echo "<tr><th>TITULO</th><th>DESCRIPCIÓN</th><th>CATEGORÍA</th><th>ENLACE</th><th>FECHA</th></tr>";
 
-    if (isset($_REQUEST['filtrar'])) {
-        $periodicos = strtolower($_REQUEST['periodicos']);
-        $cat = $_REQUEST['categoria'];
-        $f = $_REQUEST['fecha'];
-        $palabra = $_REQUEST['buscar'];
+    if (isset($_POST['filtrar'])) {
+
+        $periodicos_permitidos = ['elmundo', 'elpais']; 
+        $periodicos = strtolower($_POST['periodicos']);
+        if (!in_array($periodicos, $periodicos_permitidos)) {
+            $periodicos = 'elmundo';  //  Default seguro
+        }
+
+        $periodicos = strtolower($_POST['periodicos']);
+        $cat = $_POST['categoria'];
+        $f = $_POST['fecha'];
+        $palabra = $_POST['buscar'];
 
         $sql_base = "SELECT * FROM $periodicos WHERE 1=1";
         $params = [];
