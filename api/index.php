@@ -68,8 +68,9 @@
             echo "<td>" . htmlspecialchars($arrayFiltro['descripcion']) . "</td>";
             echo "<td>" . htmlspecialchars($arrayFiltro['categoria']) . "</td>";
             echo "<td><a href='" . htmlspecialchars($arrayFiltro['link']) . "' target='_blank'>Ver</a></td>";
-            $fecha = date_create($arrayFiltro['fPubli']);
-            echo "<td>" . date_format($fecha, 'd-M-Y') . "</td>";
+            $fPubli = $arrayFiltro['fPubli'] ?? '0000-00-00';
+            $fecha = date_create($fPubli ?: '1970-01-01');
+            echo "<td>" . ($fPubli ? date_format($fecha, 'd-M-Y') : 'Sin fecha') . "</td>";
             echo "</tr>";
         }
     }

@@ -15,7 +15,7 @@ $db = ltrim($url['path'], '/');
 $user = $url['user'];
 $pass = $url['pass'];
 
-$port = $url['port'] ?: 5432; //Puerto por defecto
+$port = isset($url['port']) ? $url['port'] : 5432; //Puerto por defecto
 
 $dsn = "pgsql:host=$host;port=$port;dbname=$db;sslmode=require";
 
