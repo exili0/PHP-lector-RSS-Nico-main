@@ -1,72 +1,63 @@
 <?php
+require_once 'conexionBBDD.php';  // Carga $link
 
-require_once "conexionRSS.php";
+function download($url) {
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    $data = curl_exec($ch);
+    curl_close($ch);
+    return $data;
+}
 
 $sXML = download("https://e00-elmundo.uecdn.es/elmundo/rss/espana.xml");
 
 if (empty($sXML)) {
-    throw new Exception("No se pudo obtener el contenido del RSS");
+    die("No se pudo obtener el RSS de El Mundo");
 }
 
 $oXML = new SimpleXMLElement($sXML);
 
-require_once "conexionBBDD.php";
+$contador = 0;
+$categoria = ["Política", "Deportes", "Ciencia", "España", "Economía", "Música", "Cine", "Europa", "Justicia"];
 
+foreach ($oXML->channel->item as $item) {
+    $categoriaFiltro = "";
+    $media = $item->children("media", true);
+    $description = (string)$media->description ?: (string)$item->description;
 
-if (pg_last_error()) {
-    printf("Conexión a el periódico El Mundo ha fallado");
-} else {
-
-    $contador = 0;
-
-    $categoria = ["Política", "Deportes", "Ciencia", "España", "Economía", "Música", "Cine", "Europa", "Justicia"];
-    //$categoriaFiltro="";  <-- NOOOO INICIALIZAR AQUÍ! SE DEBE INICIALIZAR DENTRO DEL BUCLE
-
-    foreach ($oXML->channel->item as $item) { //es un for a la que le hemos dicho que extraer y donde almacenarlo
-
-        $categoriaFiltro = "";  // INICIALIZAR AQUÍ! ya que es por cada item 
-        $media = $item->children("media", true);
-        $description = $media->description;
-
-
-        for ($i = 0; $i < count($item->category); $i++) {
-
-            for ($j = 0; $j < count($categoria); $j++) {
-
-                if ($item->category[$i] == $categoria[$j]) {
-                    $categoriaFiltro = "[" . $categoria[$j] . "]" . $categoriaFiltro;
-                }
+    for ($i = 0; $i < count($item->category); $i++) {
+        for ($j = 0; $j < count($categoria); $j++) {
+            if ($item->category[$i] == $categoria[$j]) {
+                $categoriaFiltro = "[" . $categoria[$j] . "]" . $categoriaFiltro;
             }
         }
+    }
 
+    $fPubli = strtotime($item->pubDate);
+    $new_fPubli = date('Y-m-d', $fPubli);
 
-        $fPubli = strtotime($item->pubDate);
-        $new_fPubli = date('Y-m-d', $fPubli);
-
-        $media = $item->children("media", true);
-        $description = $media->description;
-
-        $sql = "SELECT link FROM elmundo";
-        $result = pg_query($link, $sql);
-
-        while ($sqlCompara = pg_fetch_assoc($result)) {
-
-
-            if ($sqlCompara['link'] == $item->link) {
-
-                $Repit = true;
-                $contador = $contador + 1;
-                $contadorTotal = $contador;
-                break;
-            } else {
-                $Repit = false;
-            }
-        }
-        if ($Repit == false && $categoriaFiltro <> "") {
-
-            $sql = "INSERT INTO elmundo VALUES('','$item->title','$item->link','$description','$categoriaFiltro','$new_fPubli','$item->guid')";
-            $result = pg_query($link, $sql);
-        }
-        $categoriaFiltro = "";
+    $stmt = $link->prepare("SELECT COUNT(*) FROM elmundo WHERE link = ?");
+    $stmt->execute([(string)$item->link]);
+    
+    if ($stmt->fetchColumn() == 0 && $categoriaFiltro <> "") {
+        $stmt = $link->prepare("
+            INSERT INTO elmundo (titulo, link, descripcion, categoria, fPubli, contenido) 
+            VALUES (?, ?, ?, ?, ?, ?)
+        ");
+        $stmt->execute([
+            (string)$item->title,
+            (string)$item->link,
+            $description,
+            $categoriaFiltro,
+            $new_fPubli,
+            (string)$item->guid ?: (string)$item->link
+        ]);
+        $contador++;
     }
 }
+
+echo "El Mundo: $contador noticias nuevas guardadas";
+?>

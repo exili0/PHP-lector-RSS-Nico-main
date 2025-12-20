@@ -2,14 +2,25 @@
 
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="UTF-8">
     <title>Lector RSS</title>
     <style>
-        th, td { border: 1px #E4CCE8 solid; padding: 5px; text-align: left; }
-        table { border-collapse: collapse; width: 100%; }
+        th,
+        td {
+            border: 1px #e672fbff solid;
+            padding: 5px;
+            text-align: left;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
     </style>
 </head>
+
 <body>
     <form action="index.php" method="GET">
         <fieldset>
@@ -19,7 +30,7 @@
                 <option value="elpais">El Pais</option>
                 <option value="elmundo" selected>El Mundo</option>
             </select>
-            
+
             <label>CATEGORIA: </label>
             <select name="categoria">
                 <option value="">Todas</option>
@@ -27,7 +38,7 @@
                 <option value="España">España</option>
                 <option value="Europa">Europa</option>
             </select>
-            
+
             <label>FECHA: </label>
             <input type="date" name="fecha">
             <label>DESCRIPCIÓN: </label>
@@ -37,33 +48,30 @@
     </form>
 
     <?php
-    require_once "RSSElPais.php";
-    require_once "RSSElMundo.php";
+    if (!isset($link)) {
+        die("Error: Variable \$link no encontrada. Revisa conexionBBDD.php");
+    }
 
-    function filtros($sql, $link) {
-        $stmt = $link->query($sql);
-        if (!$stmt) {
-            echo "<tr><td colspan='6'>Error: " . $link->errorInfo()[2] . "</td></tr>";
-            return;
-        }
+    function filtros($sql, $link, $params = [])
+    {
+        $stmt = $link->prepare($sql);
+        $stmt->execute($params);  // Usa $params si existen
+
         if ($stmt->rowCount() == 0) {
-            echo "<tr><td colspan='6'>No se encontraron noticias.</td></tr>";
+            echo "<tr><td colspan='5'>No se encontraron noticias.</td></tr>";
             return;
         }
+
         while ($arrayFiltro = $stmt->fetch(PDO::FETCH_ASSOC)) {
             echo "<tr>";
             echo "<td>" . htmlspecialchars($arrayFiltro['titulo']) . "</td>";
             echo "<td>" . htmlspecialchars($arrayFiltro['descripcion']) . "</td>";
             echo "<td>" . htmlspecialchars($arrayFiltro['categoria']) . "</td>";
-            echo "<td><a href='" . htmlspecialchars($arrayFiltro['link']) . "'>Ver</a></td>";
+            echo "<td><a href='" . htmlspecialchars($arrayFiltro['link']) . "' target='_blank'>Ver</a></td>";
             $fecha = date_create($arrayFiltro['fPubli']);
             echo "<td>" . date_format($fecha, 'd-M-Y') . "</td>";
             echo "</tr>";
         }
-    }
-
-    if (!$link) {
-        die("Error de conexión PostgreSQL");
     }
 
     echo "<table style='border: 5px #ca75d9ff solid;'>";
@@ -75,26 +83,30 @@
         $f = $_REQUEST['fecha'];
         $palabra = $_REQUEST['buscar'];
 
-        if ($cat && $f && $palabra) {
-            $sql = "SELECT * FROM $periodicos WHERE descripcion ILIKE '%$palabra%' AND categoria ILIKE '%$cat%' AND fPubli='$f'";
-        } elseif ($cat && $f) {
-            $sql = "SELECT * FROM $periodicos WHERE categoria ILIKE '%$cat%' AND fPubli='$f'";
-        } elseif ($palabra) {
-            $sql = "SELECT * FROM $periodicos WHERE descripcion ILIKE '%$palabra%'";
-        } elseif ($cat) {
-            $sql = "SELECT * FROM $periodicos WHERE categoria ILIKE '%$cat%'";
-        } elseif ($f) {
-            $sql = "SELECT * FROM $periodicos WHERE fPubli='$f'";
-        } else {
-            $sql = "SELECT * FROM $periodicos ORDER BY fPubli DESC";
+        $sql_base = "SELECT * FROM $periodicos WHERE 1=1";
+        $params = [];
+
+        if ($cat) {
+            $sql_base .= " AND categoria ILIKE :cat";
+            $params[':cat'] = "%$cat%";
         }
-        filtros($sql, $link);
+        if ($f) {
+            $sql_base .= " AND fPubli = :fecha";
+            $params[':fecha'] = $f;
+        }
+        if ($palabra) {
+            $sql_base .= " AND descripcion ILIKE :palabra";
+            $params[':palabra'] = "%$palabra%";
+        }
+
+        $sql_base .= " ORDER BY fPubli DESC";
+        filtros($sql_base, $link, $params);  // 3 parámetros
     } else {
         $sql = "SELECT * FROM elmundo ORDER BY fPubli DESC LIMIT 50";
-        filtros($sql, $link);
+        filtros($sql, $link, []);  //  3 parámetros
     }
     echo "</table>";
-    
     ?>
 </body>
+
 </html>

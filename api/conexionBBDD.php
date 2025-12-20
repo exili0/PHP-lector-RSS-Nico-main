@@ -14,16 +14,27 @@ $host = $url['host'];
 $db = ltrim($url['path'], '/');
 $user = $url['user'];
 $pass = $url['pass'];
-$port = $url['port'] ?: 5432;
+
+$port = $url['port'] ?: 5432; //Puerto por defecto
 
 $dsn = "pgsql:host=$host;port=$port;dbname=$db;sslmode=require";
 
 try {
-    $pdo = new PDO($dsn, $user, $pass, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
-    // Guardamos en una variable llamada $link para que sea similar a tu código previo
+    $pdo = new PDO(
+        $dsn,
+        $user,
+        $pass,
+        [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            PDO::ATTR_EMULATE_PREPARES => false
+        ]
+    );
+
+    // $link tiene que ser global, para que index.php lo vea
     $link = $pdo;
-    $pdo->exec("SET NAMES 'UTF8'");
-    
+
+    //$pdo->exec("SET NAMES 'UTF8'");
 } catch (PDOException $e) {
     die("Error de conexión: " . $e->getMessage());
 }
