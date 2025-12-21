@@ -41,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['filtrar'])) {
 <head>
     <meta charset="UTF-8">
     <title>Lector RSS</title>
-    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
@@ -94,7 +94,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['filtrar'])) {
                     <td><?= htmlspecialchars($row['descripcion'] ?? '') ?></td>
                     <td><?= htmlspecialchars($row['categoria'] ?? '') ?></td>
                     <td><a href="<?= htmlspecialchars($row['link'] ?? '') ?>" target="_blank">Ver</a></td>
-                    <td><?= !empty($row['fPubli']) ? date('d-M-Y', strtotime($row['fPubli'])) : 'Sin fecha!' ?></td>
+                    <td><?= !empty($row['fPubli']) ? date('d-M-Y', strtotime($row['fPubli'])) : 'Sin fecha' ?></td>
                 </tr>
             <?php endforeach; ?>
         <?php endif; ?>
