@@ -34,7 +34,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['filtrar'])) {
     $resultados = $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 ?>
-
 <!DOCTYPE html>
 <html>
 
@@ -42,123 +41,174 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['filtrar'])) {
     <meta charset="UTF-8">
     <title>Lector RSS</title>
     <style>
-        /* Estilo general */
+        :root {
+            --primary: #745ae6;
+            --primary-light: #382eca;
+            --bg: #d6e3ff;
+            --text: #16191a;
+        }
+
         body {
-            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-            background: #f7f4fb;
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--bg);
             margin: 0;
-            padding: 0;
+            padding: 40px;
             display: flex;
             flex-direction: column;
             align-items: center;
         }
 
-        /* Contenedor principal del formulario */
+        /* Formulario */
         form {
             background: white;
-            border: 2px solid #d79cfb;
-            border-radius: 10px;
-            padding: 20px 30px;
-            margin: 25px 0;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            width: 80%;
-            max-width: 700px;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            width: 100%;
+            max-width: 1000px;
+            margin-bottom: 30px;
         }
 
         fieldset {
             border: none;
+            margin: 0;
+            padding: 0;
         }
 
         legend {
-            font-size: 1.4em;
+            color: var(--primary);
             font-weight: bold;
-            color: #a43df0;
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
-        /* Etiquetas y selects */
-        label {
-            display: inline-block;
-            width: 100px;
-            font-weight: 600;
-            margin-right: 10px;
-            color: #5f0707;
+        .filter-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: flex-end;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-width: 180px;
+        }
+
+        .filter-group label {
+            font-size: 11px;
+            font-weight: 700;
+            color: #636e72;
+            margin-bottom: 8px;
+            text-transform: uppercase;
         }
 
         select,
         input[type="date"],
         input[type="text"] {
-            padding: 8px;
-            margin: 5px 0 10px 0;
-            border: 1px solid #be7f7f;
+            padding: 10px;
+            border: 1px solid #dfe6e9;
             border-radius: 6px;
-            width: calc(100% - 120px);
-            max-width: 300px;
-            transition: 0.2s ease;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
         }
 
         select:focus,
         input:focus {
-            border-color: #b65df7;
-            outline: none;
+            border-color: var(--primary-light);
         }
 
-        /* Botón del filtro */
         input[type="submit"] {
-            background: linear-gradient(135deg, #b65df7, #9531f2);
+            background: var(--primary);
             color: white;
             border: none;
-            padding: 10px 20px;
-            margin-top: 10px;
+            padding: 11px 25px;
             border-radius: 6px;
+            font-weight: bold;
             cursor: pointer;
-            font-weight: 600;
-            transition: background 0.3s;
+            transition: background 0.2s;
         }
 
         input[type="submit"]:hover {
-            background: linear-gradient(135deg, #9531f2, #b65df7);
-            transform: translateY(-1px);
+            background: #6c3483;
         }
 
-        /* Tabla de resultados */
-        table {
+        /* Tabla */
+        .news-table {
+            width: 100%;
+            max-width: 1100px;
             border-collapse: collapse;
-            width: 90%;
-            margin-bottom: 40px;
             background: white;
-            border-radius: 10px;
+            border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
         }
 
-        th {
-            background-color: #a43df0;
-            color: white;
-            padding: 12px;
+        .news-table th {
+            background: #f1f2f6;
+            color: #2d3436;
             text-align: left;
+            padding: 15px;
+            font-size: 13px;
         }
 
-        td {
-            padding: 10px;
-            border-bottom: 1px solid #eee;
+        .news-table td {
+            padding: 15px;
+            border-bottom: 1px solid #f1f2f6;
+            color: #636e72;
+            font-size: 14px;
+            vertical-align: top;
         }
 
-        tr:nth-child(even) {
-            background-color: #faf5ff;
+        .col-title {
+            font-weight: 600;
+            color: var(--text) !important;
+            width: 20%;
+        }
+
+        .col-desc {
+            font-size: 13px !important;
+            width: 40%;
+        }
+
+        .badge {
+            background: #eeeafb;
+            color: var(--primary);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .btn-link {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .btn-link:hover {
+            text-decoration: underline;
         }
 
         tr:hover {
-            background-color: #f0e5fb;
+            background-color: #fcfaff;
         }
 
-        a {
-            color: #9531f2;
-            text-decoration: none;
-            font-weight: 600;
+        .filter-group.action {
+            flex: 0;
+            /* No deja que el botón se estire */
+            min-width: 120px;
         }
 
-        a:hover {
-            text-decoration: underline;
+        input[type="submit"] {
+            width: auto;
+            /* El botón solo ocupa lo que mide su texto */
+            padding: 10px 30px;
+            align-self: flex-end;
         }
     </style>
 </head>
@@ -166,36 +216,89 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['filtrar'])) {
 <body>
     <form action="/api/index.php" method="POST">
         <fieldset>
-            <legend>FILTRO</legend><label>PERIODICO: </label><select name="periodicos">
-                <option value="elpais" <?= ($_POST['periodicos'] ?? 'elmundo') == 'elpais' ? 'selected' : '' ?>>El Pais</option>
-                <option value="elmundo" <?= ($_POST['periodicos'] ?? 'elmundo') == 'elmundo' ? 'selected' : '' ?>>El Mundo</option>
-            </select><label>CATEGORÍA: </label><select name="categoria">
-                <option value="">Todas</option>
-                <option value="Política" <?= ($_POST['categoria'] ?? '') == 'Política' ? 'selected' : '' ?>>Política</option>
-                <option value="Deportes" <?= ($_POST['categoria'] ?? '') == 'Deportes' ? 'selected' : '' ?>>Deportes</option>
-                <option value="España" <?= ($_POST['categoria'] ?? '') == 'España' ? 'selected' : '' ?>>España</option>
-                <option value="Economía" <?= ($_POST['categoria'] ?? '') == 'Economía' ? 'selected' : '' ?>>Economía</option>
-                <option value="Europa" <?= ($_POST['categoria'] ?? '') == 'Europa' ? 'selected' : '' ?>>Europa</option>
-                <option value="Justicia" <?= ($_POST['categoria'] ?? '') == 'Justicia' ? 'selected' : '' ?>>Justicia</option>
-            </select><label>FECHA: </label><input type="date" name="fecha" value="<?= $_POST['fecha'] ?? '' ?>"><label>BUSCAR: </label><input type="text" name="buscar" value="<?= $_POST['buscar'] ?? '' ?>" placeholder="en descripción"><input type="submit" name="filtrar" value="Filtrar">
+            <legend>FILTRO DE NOTICIAS</legend>
+            <div class="filter-container">
+                <div class="filter-group">
+                    <label>PERIÓDICO:</label>
+                    <select name="periodicos">
+                        <option value="elpais" <?=($_POST['periodicos'] ?? 'elmundo' )=='elpais' ? 'selected' : '' ?>>El
+                            Pais</option>
+                        <option value="elmundo" <?=($_POST['periodicos'] ?? 'elmundo' )=='elmundo' ? 'selected' : '' ?>
+                            >El Mundo</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label>CATEGORÍA:</label>
+                    <select name="categoria">
+                        <option value="">Todas</option>
+                        <option value="Política" <?=($_POST['categoria'] ?? '' )=='Política' ? 'selected' : '' ?>
+                            >Política</option>
+                        <option value="Deportes" <?=($_POST['categoria'] ?? '' )=='Deportes' ? 'selected' : '' ?>
+                            >Deportes</option>
+                        <option value="España" <?=($_POST['categoria'] ?? '' )=='España' ? 'selected' : '' ?>>España
+                        </option>
+                        <option value="Economía" <?=($_POST['categoria'] ?? '' )=='Economía' ? 'selected' : '' ?>
+                            >Economía</option>
+                        <option value="Europa" <?=($_POST['categoria'] ?? '' )=='Europa' ? 'selected' : '' ?>>Europa
+                        </option>
+                        <option value="Justicia" <?=($_POST['categoria'] ?? '' )=='Justicia' ? 'selected' : '' ?>
+                            >Justicia</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label>FECHA:</label>
+                    <input type="date" name="fecha" value="<?= $_POST['fecha'] ?? '' ?>">
+                </div>
+
+                <div class="filter-group">
+                    <label>BUSCAR:</label>
+                    <input type="text" name="buscar" value="<?= $_POST['buscar'] ?? '' ?>" placeholder="en descripción">
+                </div>
+
+                <div class="filter-group action">
+                    <input type="submit" name="filtrar" value="Filtrar">
+                </div>
+            </div>
         </fieldset>
     </form>
-    <table style='border: 5px #092368ff solid; width:100%;'>
-        <tr>
-            <th>TITULO</th>
-            <th>DESCRIPCIÓN</th>
-            <th>CATEGORÍA</th>
-            <th>ENLACE</th>
-            <th>FECHA</th>
-        </tr><?php if (empty($resultados)): ?><tr>
-                <td colspan="5">No se encontraron noticias.</td>
-            </tr><?php else: ?><?php foreach ($resultados as $row): ?><tr>
-                <td><?= htmlspecialchars($row['titulo'] ?? '') ?></td>
-                <td><?= htmlspecialchars($row['descripcion'] ?? '') ?></td>
-                <td><?= htmlspecialchars($row['categoria'] ?? '') ?></td>
-                <td><a href="<?= htmlspecialchars($row['link'] ?? '') ?>" target="_blank">Ver</a></td>
-                <td><?= !empty($row['fPubli']) ? date('d-M-Y', strtotime($row['fPubli'])) : 'Sin fecha' ?></td>
-            </tr><?php endforeach; ?><?php endif; ?>
+
+    <table class="news-table">
+        <thead>
+            <tr>
+                <th>TITULO</th>
+                <th>DESCRIPCIÓN</th>
+                <th>CATEGORÍA</th>
+                <th>ENLACE</th>
+                <th>FECHA</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php if (empty($resultados)): ?>
+            <tr>
+                <td colspan="5" class="empty-msg">No se encontraron noticias.</td>
+            </tr>
+            <?php else: ?>
+            <?php foreach ($resultados as $row): ?>
+            <tr>
+                <td class="col-title">
+                    <?= htmlspecialchars($row['titulo'] ?? '') ?>
+                </td>
+                <td class="col-desc">
+                    <?= htmlspecialchars($row['descripcion'] ?? '') ?>
+                </td>
+                <td><span class="badge">
+                        <?= htmlspecialchars($row['categoria'] ?? '') ?>
+                    </span></td>
+                <td><a href="<?= htmlspecialchars($row['link'] ?? '') ?>" target="_blank" class="btn-link">Ver</a></td>
+                <td class="col-date">
+                    <?= !empty($row['fPubli']) ? date('d M, Y', strtotime($row['fPubli'])) : 'Sin fecha' ?>
+                </td>
+            </tr>
+            <?php endforeach; ?>
+            <?php endif; ?>
+        </tbody>
     </table>
 </body>
 
