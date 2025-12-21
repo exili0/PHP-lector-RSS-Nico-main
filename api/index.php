@@ -6,19 +6,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Lector RSS</title>
-    <style>
-        th,
-        td {
-            border: 1px #e672fbff solid;
-            padding: 5px;
-            text-align: left;
-        }
-
-        table {
-            border-collapse: collapse;
-            width: 100%;
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
@@ -80,7 +68,7 @@
 
     if (isset($_POST['filtrar'])) {
 
-        $periodicos_permitidos = ['elmundo', 'elpais']; 
+        $periodicos_permitidos = ['elmundo', 'elpais'];
         $periodicos = strtolower($_POST['periodicos']);
         if (!in_array($periodicos, $periodicos_permitidos)) {
             $periodicos = 'elmundo';  //  Default seguro
