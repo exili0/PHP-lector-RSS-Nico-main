@@ -94,7 +94,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['filtrar'])) {
                     <td><?= htmlspecialchars($row['descripcion'] ?? '') ?></td>
                     <td><?= htmlspecialchars($row['categoria'] ?? '') ?></td>
                     <td><a href="<?= htmlspecialchars($row['link'] ?? '') ?>" target="_blank">Ver</a></td>
-                    <td><?= (isset($row['fPubli']) && $row['fPubli'] && $row['fPubli'] !== '0000-00-00') ? date('d-M-Y', strtotime($row['fPubli'])) : 'Sin fecha' ?></td>
+                    <td><?= !empty($row['fPubli']) ? date('d-M-Y', strtotime($row['fPubli'])) : 'Sin fecha!' ?></td>
                 </tr>
             <?php endforeach; ?>
         <?php endif; ?>
