@@ -46,25 +46,51 @@
     function filtros($sql, $link, $params = [])
     {
         try {
-            $stmt = $link->prepare($sql);
-            $stmt->execute($params);
-            if ($stmt->rowCount() == 0) {
-                echo "<tr><td colspan='5'>No se encontraron noticias.</td></tr>";
-                return;
-            }
-            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                echo "<tr>";
-                echo "<td>" . htmlspecialchars($row['titulo']) . "</td>";
-                echo "<td>" . htmlspecialchars($row['descripcion']) . "</td>";
-                echo "<td>" . htmlspecialchars($row['categoria']) . "</td>";
-                echo "<td><a href='" . htmlspecialchars($row['link']) . "' target='_blank'>Ver</a></td>";
-                echo "<td>" . ($row['fPubli'] ? date('d-M-Y', strtotime($row['fPubli'])) : 'Sin fecha') . "</td>";
-                echo "</tr>";
+            if (empty($params)) {
+                // ✅ SQL directo (como el amigo)
+                $result = $link->query($sql);
+                if (!$result || $result->rowCount() == 0) {
+                    echo "<tr><td colspan='5'>No se encontraron noticias.</td></tr>";
+                    return;
+                }
+                while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
+                    mostrarFila($row);
+                }
+            } else {
+                // ✅ Prepared statements
+                $stmt = $link->prepare($sql);
+                $stmt->execute($params);
+                if ($stmt->rowCount() == 0) {
+                    echo "<tr><td colspan='5'>No se encontraron noticias.</td></tr>";
+                    return;
+                }
+                while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                    mostrarFila($row);
+                }
             }
         } catch (Exception $e) {
-            echo "<tr><td colspan='5'>Error: " . $e->getMessage() . "</td></tr>";
+            echo "<tr><td colspan='5'>Error SQL: " . htmlspecialchars($e->getMessage()) . "</td></tr>";
         }
     }
+
+    // FUNCIÓN AUXILIAR para evitar warnings fPubli
+    function mostrarFila($row)
+    {
+        echo "<tr>";
+        echo "<td>" . htmlspecialchars($row['titulo'] ?? '') . "</td>";
+        echo "<td>" . htmlspecialchars($row['descripcion'] ?? '') . "</td>";
+        echo "<td>" . htmlspecialchars($row['categoria'] ?? '') . "</td>";
+        echo "<td><a href='" . htmlspecialchars($row['link'] ?? '') . "' target='_blank'>Ver</a></td>";
+
+        //  FIX: Manejo seguro de fPubli
+        $fechaTexto = 'Sin fecha';
+        if (isset($row['fPubli']) && $row['fPubli'] && $row['fPubli'] !== '0000-00-00') {
+            $fechaTexto = date('d-M-Y', strtotime($row['fPubli']));
+        }
+        echo "<td>$fechaTexto</td>";
+        echo "</tr>";
+    }
+
 
     echo "<table style='border: 5px #ca75d9ff solid;'>";
     echo "<tr><th>TITULO</th><th>DESCRIPCIÓN</th><th>CATEGORÍA</th><th>ENLACE</th><th>FECHA</th></tr>";
@@ -72,30 +98,12 @@
     //FIX: $_POST + validación
     if (isset($_POST['filtrar']) && $_POST) {
         $periodicosMin = strtolower($_POST['periodicos'] ?? 'elmundo');
-        $cat = $_POST['categoria'] ?? '';
-        $f = $_POST['fecha'] ?? '';
-        $palabra = $_POST['buscar'] ?? '';
-
-        // 8 casos simplificados (PostgreSQL)
-        if ($cat == "" && $f == "" && $palabra == "") {
-            $sql = "SELECT * FROM $periodicosMin ORDER BY fPubli DESC LIMIT 50";
-            filtros($sql, $link, []);
-        } elseif ($palabra != "") {
-            $sql = "SELECT * FROM $periodicosMin WHERE descripcion ILIKE :p";
-            if ($cat != "") $sql .= " AND categoria ILIKE :c";
-            if ($f != "") $sql .= " AND DATE(fPubli) = :f";
-            $sql .= " ORDER BY fPubli DESC LIMIT 50";
-            filtros($sql, $link, [':p' => "%$palabra%"] +
-                ($cat ? [':c' => "%$cat%"] : []) +
-                ($f ? [':f' => $f] : []));
-        } elseif ($cat != "" || $f != "") {
-            $sql = "SELECT * FROM $periodicosMin WHERE 1=1";
-            if ($cat) $sql .= " AND categoria ILIKE :c";
-            if ($f) $sql .= " AND DATE(fPubli) = :f";
-            $sql .= " ORDER BY fPubli DESC LIMIT 50";
-            $params = ($cat ? [':c' => "%$cat%"] : []) + ($f ? [':f' => $f] : []);
-            filtros($sql, $link, $params);
-        }
+        $where = "WHERE 1=1";
+        if ($_POST['categoria']) $where .= " AND categoria ILIKE '%" . $_POST['categoria'] . "%'";
+        if ($_POST['fecha']) $where .= " AND DATE(fPubli) = '" . $_POST['fecha'] . "'";
+        if ($_POST['buscar']) $where .= " AND descripcion ILIKE '%" . $_POST['buscar'] . "%'";
+        $sql = "SELECT * FROM $periodicosMin $where ORDER BY fPubli DESC LIMIT 50";
+        filtros($sql, $link, []);
     } else {
         filtros("SELECT * FROM elmundo ORDER BY fPubli DESC LIMIT 50", $link, []);
     }
