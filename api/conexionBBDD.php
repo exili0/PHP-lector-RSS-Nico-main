@@ -8,8 +8,6 @@ if (!$dbUrl) {
 }
 
 $url = parse_url($dbUrl);
-
-$url = parse_url($dbUrl);
 $host = $url['host'];
 $db = ltrim($url['path'], '/');
 $user = $url['user'];

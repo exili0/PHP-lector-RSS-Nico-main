@@ -67,17 +67,15 @@
     echo "<tr><th>TITULO</th><th>DESCRIPCIÓN</th><th>CATEGORÍA</th><th>ENLACE</th><th>FECHA</th></tr>";
 
     if (isset($_POST['filtrar'])) {
-
         $periodicos_permitidos = ['elmundo', 'elpais'];
         $periodicos = strtolower($_POST['periodicos']);
         if (!in_array($periodicos, $periodicos_permitidos)) {
-            $periodicos = 'elmundo';  //  Default seguro
+            $periodicos = 'elmundo';  // Default seguro
         }
 
-        $periodicos = strtolower($_POST['periodicos']);
-        $cat = $_POST['categoria'];
-        $f = $_POST['fecha'];
-        $palabra = $_POST['buscar'];
+        $cat = $_POST['categoria'] ?? '';
+        $f = $_POST['fecha'] ?? '';
+        $palabra = $_POST['buscar'] ?? '';
 
         $sql_base = "SELECT * FROM $periodicos WHERE 1=1";
         $params = [];
@@ -87,7 +85,7 @@
             $params[':cat'] = "%$cat%";
         }
         if ($f) {
-            $sql_base .= " AND fPubli = :fecha";
+            $sql_base .= " AND DATE(fPubli) = :fecha";
             $params[':fecha'] = $f;
         }
         if ($palabra) {
@@ -95,12 +93,13 @@
             $params[':palabra'] = "%$palabra%";
         }
 
-        $sql_base .= " ORDER BY fPubli DESC";
-        filtros($sql_base, $link, $params);  // 3 parámetros
+        $sql_base .= " ORDER BY fPubli DESC LIMIT 50";  // LIMIT para evitar timeouts
+        filtros($sql_base, $link, $params);
     } else {
         $sql = "SELECT * FROM elmundo ORDER BY fPubli DESC LIMIT 50";
-        filtros($sql, $link, []);  //  3 parámetros
+        filtros($sql, $link, []);
     }
+
     echo "</table>";
     ?>
 </body>
