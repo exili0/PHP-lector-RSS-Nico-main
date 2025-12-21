@@ -37,7 +37,7 @@ label {
   width: 100px;
   font-weight: 600;
   margin-right: 10px;
-  color: #444;
+  color: #5f0707;
 }
 
 select,
@@ -45,7 +45,7 @@ input[type="date"],
 input[type="text"] {
   padding: 8px;
   margin: 5px 0 10px 0;
-  border: 1px solid #ccc;
+  border: 1px solid #be7f7f;
   border-radius: 6px;
   width: calc(100% - 120px);
   max-width: 300px;
@@ -55,7 +55,6 @@ input[type="text"] {
 select:focus,
 input:focus {
   border-color: #b65df7;
-  box-shadow: 0 0 4px rgba(176, 59, 255, 0.5);
   outline: none;
 }
 
